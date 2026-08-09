@@ -1,11 +1,9 @@
 use crate::styles::colors::Color;
 
 pub mod colors;
+mod types;
 
-pub enum FontStyle {
-    Normal,
-    Italic,
-}
+pub use types::FontStyle;
 
 #[derive(Default)]
 pub struct Style {
