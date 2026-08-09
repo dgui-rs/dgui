@@ -29,45 +29,44 @@ thread_local! {
 pub struct Widget {
     pub type_of: WidgetType,
     pub children: Option<Vec<Widget>>,
-    pub styles: Option<Style>,
+    pub style: Style,
 }
 
 impl Widget {
-    pub fn panel(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn panel(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Panel,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn scrollarea(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn scrollarea(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::ScrollArea,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn tabs(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn tabs(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Tabs,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn tab(children: Vec<Widget>, styles: Option<Style>, label: String) -> Self {
+    pub fn tab(children: Vec<Widget>, label: String) -> Self {
         Self {
             type_of: WidgetType::Tab { label },
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
     pub fn collapsible<F>(
         children: Vec<Widget>,
-        styles: Option<Style>,
         expand: impl Into<Value<bool>>,
         ontoggle: F,
     ) -> Self
@@ -80,32 +79,27 @@ impl Widget {
                 ontoggle: Box::new(ontoggle),
             },
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn splitter(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn splitter(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Splitter,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn window(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn window(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Window,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn button<F1, F2>(
-        children: Vec<Widget>,
-        styles: Option<Style>,
-        onclick: F1,
-        onhover: F2,
-    ) -> Self
+    pub fn button<F1, F2>(children: Vec<Widget>, onclick: F1, onhover: F2) -> Self
     where
         F1: Fn() + 'static,
         F2: Fn() + 'static,
@@ -116,11 +110,11 @@ impl Widget {
                 onhover: Box::new(onhover),
             },
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn switch<F>(value: impl Into<Value<bool>>, styles: Option<Style>, ontoggle: F) -> Self
+    pub fn switch<F>(value: impl Into<Value<bool>>, ontoggle: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -130,11 +124,11 @@ impl Widget {
                 ontoggle: Box::new(ontoggle),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn checkbox<F>(value: impl Into<Value<bool>>, ontoggle: F, styles: Option<Style>) -> Self
+    pub fn checkbox<F>(value: impl Into<Value<bool>>, ontoggle: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -144,7 +138,7 @@ impl Widget {
                 ontoggle: Box::new(ontoggle),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
@@ -152,7 +146,6 @@ impl Widget {
         label: impl Into<String>,
         value: impl Into<Value<bool>>,
         onchange: F,
-        styles: Option<Style>,
     ) -> Self
     where
         F: Fn() + 'static,
@@ -164,17 +157,11 @@ impl Widget {
                 onchange: Box::new(onchange),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn slider<F>(
-        value: impl Into<Value<f64>>,
-        min: f64,
-        max: f64,
-        onchange: F,
-        styles: Option<Style>,
-    ) -> Self
+    pub fn slider<F>(value: impl Into<Value<f64>>, min: f64, max: f64, onchange: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -186,17 +173,11 @@ impl Widget {
                 onchange: Box::new(onchange),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn drag_value<F>(
-        value: impl Into<Value<f64>>,
-        min: f64,
-        max: f64,
-        onchange: F,
-        styles: Option<Style>,
-    ) -> Self
+    pub fn drag_value<F>(value: impl Into<Value<f64>>, min: f64, max: f64, onchange: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -208,15 +189,11 @@ impl Widget {
                 onchange: Box::new(onchange),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn text_input<F>(
-        value: impl Into<Value<String>>,
-        onchange: F,
-        styles: Option<Style>,
-    ) -> Self
+    pub fn text_input<F>(value: impl Into<Value<String>>, onchange: F) -> Self
     where
         F: Fn(Event) + 'static,
     {
@@ -226,16 +203,11 @@ impl Widget {
                 onchange: Box::new(onchange),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn select<F>(
-        label: impl Into<String>,
-        options: Vec<String>,
-        onchange: F,
-        styles: Option<Style>,
-    ) -> Self
+    pub fn select<F>(label: impl Into<String>, options: Vec<String>, onchange: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -246,44 +218,39 @@ impl Widget {
                 onchange: Box::new(onchange),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn text(text: impl Into<Value<String>>, styles: Option<Style>) -> Self {
+    pub fn text(text: impl Into<Value<String>>) -> Self {
         Self {
             type_of: WidgetType::Text { text: text.into() },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn icon(source: impl Into<String>, styles: Option<Style>) -> Self {
+    pub fn icon(source: impl Into<String>) -> Self {
         Self {
             type_of: WidgetType::Icon {
                 source: source.into(),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn image(source: impl Into<String>, styles: Option<Style>) -> Self {
+    pub fn image(source: impl Into<String>) -> Self {
         Self {
             type_of: WidgetType::Image {
                 source: source.into(),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn progress(
-        value: impl Into<Value<f64>>,
-        min: f64,
-        max: f64,
-        styles: Option<Style>,
-    ) -> Self {
+    pub fn progress(value: impl Into<Value<f64>>, min: f64, max: f64) -> Self {
         Self {
             type_of: WidgetType::ProgressBar {
                 value: value.into(),
@@ -291,11 +258,11 @@ impl Widget {
                 max,
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn link<F>(label: impl Into<String>, onclick: F, styles: Option<Style>) -> Self
+    pub fn link<F>(label: impl Into<String>, onclick: F) -> Self
     where
         F: Fn() + 'static,
     {
@@ -305,23 +272,28 @@ impl Widget {
                 onclick: Box::new(onclick),
             },
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn separator(styles: Option<Style>) -> Self {
+    pub fn separator() -> Self {
         Self {
             type_of: WidgetType::Separator,
             children: None,
-            styles,
+            style: Style::default(),
         }
     }
 
-    pub fn canvas(children: Vec<Widget>, styles: Option<Style>) -> Self {
+    pub fn canvas(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Canvas,
             children: Some(children),
-            styles,
+            style: Style::default(),
         }
+    }
+
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
+        self
     }
 }

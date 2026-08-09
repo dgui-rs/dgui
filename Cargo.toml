@@ -3,14 +3,14 @@ name = "dgui"
 version = "0.0.4"
 edition = "2024"
 license = "MIT"
-description = "A pure Rust, renderer-agnostic, platform-agnostic reactive retained-mode GUI framework. (In Development)"
+description = "A renderer-agnostic reactive retained-mode GUI framework. (In Development)"
 keywords = ["gui", "dgui"]
 categories = ["gui"]
 repository = "https://github.com/sumeeth05/dgui"
 homepage = "https://github.com/sumeeth05/dgui"
 
 [dependencies]
-taffy = "0.12"
+taffy = "0.13"
 lyon = "1"
 thiserror = "2"
 cosmic-text = "0.19"

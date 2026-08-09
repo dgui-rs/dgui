@@ -1,6 +1,6 @@
 # 🦀 dgui (desktop GUI)
 
-A pure Rust, renderer-agnostic, platform-agnostic reactive retained-mode GUI framework.
+A renderer-agnostic reactive retained-mode GUI framework.
 
 [![GitHub](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/sumeeth05/dgui)
 [![Crates.io](https://img.shields.io/crates/v/dgui.svg?color=orange)](https://crates.io/crates/dgui)
@@ -12,12 +12,11 @@ A pure Rust, renderer-agnostic, platform-agnostic reactive retained-mode GUI fra
 
 ## Features
 
-- 🦀 Built entirely in Rust.
-- 🎨 Renderer agnostic — works with any graphics backend.
-- 🌍 Platform agnostic — compatible with any windowing or event library.
-- ⚡ Reactive signals automatically update the UI.
+- 🍁 Renderer agnostic — works with any graphics backend.
+- ⚡ Built in Reactivity.
 - 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and animations.
+- 🎨 Tailwind color palette.
 - 📦 Modular architecture with easy to use API.
 - 🚀 Lightweight, fast, and highly customizable.
 - 🔀 Native Node Graph Support.
@@ -29,25 +28,21 @@ let count = Signal::create(0);
 
 let ui = Widget::panel(
     vec![
-        Widget::text(&count, None),
+        Widget::text(&count),
 
         Widget::button(
-            vec![Widget::text("+", None)],
+            vec![Widget::text("+")],
             || {
                 count.set(|value| *value += 1);
-            },
-            None,
-        ),
+            }),
 
         Widget::button(
-            vec![Widget::text("-", None)],
+            vec![Widget::text("-")],
             || {
                 count.set(|value| *value -= 1);
-            },
-            None,
-        ),
+            }),
     ],
-    Styles::default(),
+    Style::default(),
 );
 
 
