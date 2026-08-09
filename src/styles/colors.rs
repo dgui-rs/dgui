@@ -17,7 +17,7 @@ impl Color {
         Self::rgba(r, g, b, 1.0)
     }
 
-    pub const fn with_alpha(mut self, a: f32) -> Self {
+    pub const fn opacity(mut self, a: f32) -> Self {
         self.a = a;
         self
     }
