@@ -8,7 +8,7 @@ A renderer-agnostic reactive retained-mode GUI framework.
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sumeeth05/dgui/blob/main/LICENSE)
 
 > [!WARNING]
-> ⚠️ Note: DGUI is currently in active development and not recommended for production use.
+> ⚠️ Note: DGUI is currently in active development and not recommended even for experimental use, the crate does nothing. We are still starting out, so comeback later.
 
 ## Features
 
