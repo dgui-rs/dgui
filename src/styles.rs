@@ -1,8 +1,7 @@
-use crate::styles::colors::Color;
-
-pub mod colors;
+mod colors;
 mod types;
 
+pub use colors::Color;
 pub use types::FontStyle;
 
 #[derive(Default)]

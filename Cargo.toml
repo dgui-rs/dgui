@@ -12,6 +12,5 @@ homepage = "https://github.com/sumeeth05/dgui"
 [dependencies]
 taffy = "0.13"
 lyon = "1"
-thiserror = "2"
 cosmic-text = "0.19"
 etagere = "0.3"
