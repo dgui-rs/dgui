@@ -1,7 +1,5 @@
 use std::cell::Cell;
 
-use thiserror::Error;
-
 use crate::{
     events::Event,
     signal::{Flags, Value},
@@ -15,12 +13,6 @@ pub mod signal;
 pub mod styles;
 mod text;
 mod widgets;
-
-#[derive(Debug, Error)]
-#[non_exhaustive]
-pub enum Error {}
-
-pub type Result<T> = std::result::Result<T, Error>;
 
 thread_local! {
     static DIRTY: Cell<Flags> = const { Cell::new(Flags::UNSIGNALED) };
