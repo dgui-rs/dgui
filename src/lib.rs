@@ -12,7 +12,6 @@ mod events;
 pub mod layout;
 pub mod signal;
 pub mod styles;
-mod tessellation;
 mod text;
 mod widgets;
 
