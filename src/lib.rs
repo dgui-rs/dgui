@@ -17,7 +17,7 @@ mod text;
 mod widgets;
 
 thread_local! {
-    static DIRTY: Cell<Flags> = const { Cell::new(Flags::UNSIGNALED) };
+  pub(crate)  static DIRTY: Cell<Flags> = const { Cell::new(Flags::UNSIGNALED) };
 }
 
 pub struct Widget {
@@ -63,7 +63,7 @@ impl Widget {
                     let index = index as u8;
 
                     Some(Widget::button(
-                        vec![Widget::text(label.clone())],
+                        vec![Widget::text(label.get())],
                         move || {
                             onchange(index);
                         },
@@ -85,7 +85,7 @@ impl Widget {
         }
     }
 
-    pub fn tab(children: Vec<Widget>, label: String) -> Self {
+    pub fn tab(children: Vec<Widget>, label: Value<String>) -> Self {
         Self {
             type_of: WidgetType::Tab { label },
             children: Some(children),
@@ -173,18 +173,13 @@ impl Widget {
         }
     }
 
-    pub fn radio_button<F>(
-        label: impl Into<String>,
-        value: impl Into<Value<bool>>,
-        onchange: F,
-    ) -> Self
+    pub fn radio_button<F>(selected: impl Into<Value<bool>>, onchange: F) -> Self
     where
         F: Fn() + 'static,
     {
         Self {
             type_of: WidgetType::RadioButton {
-                label: label.into(),
-                selected: value.into(),
+                selected: selected.into(),
                 onchange: Box::new(onchange),
             },
             children: None,
@@ -238,13 +233,13 @@ impl Widget {
         }
     }
 
-    pub fn select<F>(label: impl Into<String>, options: Vec<String>, onchange: F) -> Self
+    pub fn select<F>(default: impl Into<Value<String>>, options: Vec<String>, onchange: F) -> Self
     where
         F: Fn() + 'static,
     {
         Self {
             type_of: WidgetType::Select {
-                label: label.into(),
+                default: default.into(),
                 options,
                 onchange: Box::new(onchange),
             },
@@ -261,7 +256,7 @@ impl Widget {
         }
     }
 
-    pub fn icon(source: impl Into<String>) -> Self {
+    pub fn icon(source: impl Into<Value<String>>) -> Self {
         Self {
             type_of: WidgetType::Icon {
                 source: source.into(),
@@ -271,7 +266,7 @@ impl Widget {
         }
     }
 
-    pub fn image(source: impl Into<String>) -> Self {
+    pub fn image(source: impl Into<Value<String>>) -> Self {
         Self {
             type_of: WidgetType::Image {
                 source: source.into(),
@@ -293,7 +288,7 @@ impl Widget {
         }
     }
 
-    pub fn link<F>(label: impl Into<String>, onclick: F) -> Self
+    pub fn link<F>(label: impl Into<Value<String>>, onclick: F) -> Self
     where
         F: Fn() + 'static,
     {

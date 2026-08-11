@@ -11,7 +11,7 @@ pub enum WidgetType {
         onchange: Rc<dyn Fn(u8)>,
     },
     Tab {
-        label: String,
+        label: Value<String>,
     },
     Collapsible {
         expand: Value<bool>,
@@ -32,7 +32,6 @@ pub enum WidgetType {
         ontoggle: Box<dyn Fn()>,
     },
     RadioButton {
-        label: String,
         selected: Value<bool>,
         onchange: Box<dyn Fn()>,
     },
@@ -52,8 +51,9 @@ pub enum WidgetType {
         value: Value<String>,
         onchange: Box<dyn Fn(Event)>,
     },
+
     Select {
-        label: String,
+        default: Value<String>,
         options: Vec<String>,
         onchange: Box<dyn Fn()>,
     },
@@ -63,11 +63,11 @@ pub enum WidgetType {
     },
 
     Icon {
-        source: String,
+        source: Value<String>,
     },
 
     Image {
-        source: String,
+        source: Value<String>,
     },
 
     ProgressBar {
@@ -77,7 +77,7 @@ pub enum WidgetType {
     },
 
     Hyperlink {
-        label: String,
+        label: Value<String>,
         onclick: Box<dyn Fn()>,
     },
 

@@ -2,7 +2,7 @@ mod colors;
 mod types;
 
 pub use colors::Color;
-pub use types::FontStyle;
+pub use types::{Dimension, FontStyle};
 
 #[derive(Default)]
 pub struct Style {
@@ -15,23 +15,28 @@ pub struct Style {
 }
 
 impl Style {
-    pub fn color(&mut self, color: Color) {
-        self.color = Some(color)
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = Some(color);
+        self
     }
 
-    pub fn background_color(&mut self, color: Color) {
-        self.background_color = Some(color)
+    pub fn background_color(mut self, color: Color) -> Self {
+        self.background_color = Some(color);
+        self
     }
 
-    pub fn font_size(&mut self, size: f32) {
-        self.font_size = Some(size)
+    pub fn font_size(mut self, size: f32) -> Self {
+        self.font_size = Some(size);
+        self
     }
 
-    pub fn font_weight(&mut self, weight: f32) {
-        self.font_weight = Some(weight)
+    pub fn font_weight(mut self, weight: f32) -> Self {
+        self.font_weight = Some(weight);
+        self
     }
 
-    pub fn font_style(&mut self, style: FontStyle) {
-        self.font_style = Some(style)
+    pub fn font_style(mut self, style: FontStyle) -> Self {
+        self.font_style = Some(style);
+        self
     }
 }

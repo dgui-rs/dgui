@@ -45,11 +45,9 @@ impl Layout {
                             let header = &nodes[0];
                             let content = &nodes[1];
 
-                            let tabs = content.children.as_ref().unwrap();
-
-                            if tabs.is_empty() {
-                                taffy.new_leaf(child.style.layout.clone()).unwrap()
-                            } else {
+                            if let Some(tabs) =
+                                content.children.as_deref().filter(|t| !t.is_empty())
+                            {
                                 let header_node = Self::build_taffy_tree(header, taffy);
 
                                 let index = active.get() as usize;
@@ -64,14 +62,18 @@ impl Layout {
                                         &[header_node, active_node],
                                     )
                                     .unwrap()
+                            } else {
+                                taffy.new_leaf(child.style.layout.clone()).unwrap()
                             }
                         }
 
                         WidgetType::Collapsible { expand, .. } => {
-                            let header = Self::build_taffy_tree(&children[0], taffy);
+                            let nodes = child.children.as_ref().unwrap();
+
+                            let header = Self::build_taffy_tree(&nodes[0], taffy);
 
                             if expand.get() {
-                                let content = Self::build_taffy_tree(&children[1], taffy);
+                                let content = Self::build_taffy_tree(&nodes[1], taffy);
 
                                 taffy
                                     .new_with_children(

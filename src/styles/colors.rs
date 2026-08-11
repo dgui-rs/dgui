@@ -21,6 +21,16 @@ impl Color {
         self.a = a;
         self
     }
+
+    pub fn lerp(self, target: Color, t: f32) -> Color {
+        let t = t.clamp(0.0, 1.0);
+        Color::rgba(
+            self.r + (target.r - self.r) * t,
+            self.g + (target.g - self.g) * t,
+            self.b + (target.b - self.b) * t,
+            self.a + (target.a - self.a) * t,
+        )
+    }
 }
 
 impl Color {
