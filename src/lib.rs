@@ -7,7 +7,6 @@ use crate::{
     widgets::WidgetType,
 };
 
-pub mod draw;
 mod events;
 pub mod layout;
 pub mod signal;
