@@ -1,9 +1,16 @@
-use crate::{events::Event, signal::Value};
+use std::rc::Rc;
 
+use crate::{Widget, events::Event, signal::Value};
+
+#[non_exhaustive]
 pub enum WidgetType {
     Panel,
     ScrollArea,
-    Tabs,
+    Tabs {
+        active: Value<u8>,
+        onchange: Rc<dyn Fn(u8)>,
+        header: Vec<Widget>,
+    },
     Tab {
         label: String,
     },

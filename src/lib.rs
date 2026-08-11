@@ -1,4 +1,4 @@
-use std::cell::Cell;
+use std::{cell::Cell, rc::Rc};
 
 use crate::{
     events::Event,
@@ -7,10 +7,12 @@ use crate::{
     widgets::WidgetType,
 };
 
+pub mod draw;
 mod events;
 pub mod layout;
 pub mod signal;
 pub mod styles;
+mod tessellation;
 mod text;
 mod widgets;
 
@@ -19,9 +21,9 @@ thread_local! {
 }
 
 pub struct Widget {
-    pub type_of: WidgetType,
-    pub children: Option<Vec<Widget>>,
-    pub style: Style,
+    pub(crate) type_of: WidgetType,
+    pub(crate) children: Option<Vec<Widget>>,
+    pub(crate) style: Style,
 }
 
 impl Widget {
@@ -41,9 +43,39 @@ impl Widget {
         }
     }
 
-    pub fn tabs(children: Vec<Widget>) -> Self {
+    pub fn tabs<F>(children: Vec<Widget>, active: impl Into<Value<u8>>, onchange: F) -> Self
+    where
+        F: Fn(u8) + 'static,
+    {
+        let onchange = Rc::new(onchange);
+
+        let header: Vec<Widget> = children
+            .iter()
+            .enumerate()
+            .filter_map(|(index, widget)| match &widget.type_of {
+                WidgetType::Tab { label } => {
+                    let onchange = Rc::clone(&onchange);
+                    let index = index as u8;
+
+                    Some(Widget::button(
+                        vec![Widget::text(label.clone())],
+                        move || {
+                            onchange(index);
+                        },
+                        || {},
+                    ))
+                }
+
+                _ => None,
+            })
+            .collect();
+
         Self {
-            type_of: WidgetType::Tabs,
+            type_of: WidgetType::Tabs {
+                active: active.into(),
+                onchange,
+                header,
+            },
             children: Some(children),
             style: Style::default(),
         }

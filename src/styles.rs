@@ -6,7 +6,7 @@ pub use types::FontStyle;
 
 #[derive(Default)]
 pub struct Style {
-    pub(crate) _layout: taffy::style::Style,
+    pub(crate) layout: taffy::style::Style,
     pub(crate) color: Option<Color>,
     pub(crate) background_color: Option<Color>,
     pub(crate) font_size: Option<f32>,
