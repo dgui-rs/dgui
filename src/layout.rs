@@ -40,34 +40,52 @@ impl Layout {
                 let nodes: Vec<_> = children
                     .iter()
                     .map(|child| match &child.type_of {
-                        WidgetType::Tabs { active, header, .. } => match child.children.as_ref() {
-                            Some(children) if !children.is_empty() => {
-                                let header_buttons: Vec<_> = header
-                                    .iter()
-                                    .map(|h| Self::build_taffy_tree(h, taffy))
-                                    .collect();
+                        WidgetType::Tabs { active, .. } => {
+                            let nodes = child.children.as_ref().unwrap();
+                            let header = &nodes[0];
+                            let content = &nodes[1];
 
-                                let header = taffy
-                                    .new_with_children(taffy::Style::default(), &header_buttons)
-                                    .unwrap();
+                            let tabs = content.children.as_ref().unwrap();
+
+                            if tabs.is_empty() {
+                                taffy.new_leaf(child.style.layout.clone()).unwrap()
+                            } else {
+                                let header_node = Self::build_taffy_tree(header, taffy);
 
                                 let index = active.get() as usize;
-
-                                let active_index = if index < children.len() { index } else { 0 };
+                                let active_index = if index < tabs.len() { index } else { 0 };
 
                                 let active_node =
-                                    Self::build_taffy_tree(&children[active_index], taffy);
+                                    Self::build_taffy_tree(&tabs[active_index], taffy);
 
                                 taffy
                                     .new_with_children(
                                         child.style.layout.clone(),
-                                        &[header, active_node],
+                                        &[header_node, active_node],
                                     )
                                     .unwrap()
                             }
+                        }
 
-                            _ => taffy.new_leaf(child.style.layout.clone()).unwrap(),
-                        },
+                        WidgetType::Collapsible { expand, .. } => {
+                            let header = Self::build_taffy_tree(&children[0], taffy);
+
+                            if expand.get() {
+                                let content = Self::build_taffy_tree(&children[1], taffy);
+
+                                taffy
+                                    .new_with_children(
+                                        child.style.layout.clone(),
+                                        &[header, content],
+                                    )
+                                    .unwrap()
+                            } else {
+                                taffy
+                                    .new_with_children(child.style.layout.clone(), &[header])
+                                    .unwrap()
+                            }
+                        }
+
                         _ => Self::build_taffy_tree(child, taffy),
                     })
                     .collect();
@@ -81,5 +99,5 @@ impl Layout {
         }
     }
 
-    fn tessellate(tree: &TaffyTree<()>, node: taffy::NodeId) {}
+    fn tessellate(_tree: &TaffyTree<()>, _node: taffy::NodeId) {}
 }

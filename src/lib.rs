@@ -49,7 +49,12 @@ impl Widget {
     {
         let onchange = Rc::new(onchange);
 
-        let header: Vec<Widget> = children
+        let tabs: Vec<Widget> = children
+            .into_iter()
+            .filter(|widget| matches!(widget.type_of, WidgetType::Tab { .. }))
+            .collect();
+
+        let header: Vec<Widget> = tabs
             .iter()
             .enumerate()
             .filter_map(|(index, widget)| match &widget.type_of {
@@ -74,9 +79,8 @@ impl Widget {
             type_of: WidgetType::Tabs {
                 active: active.into(),
                 onchange,
-                header,
             },
-            children: Some(children),
+            children: Some(vec![Widget::panel(header), Widget::panel(tabs)]),
             style: Style::default(),
         }
     }
@@ -90,6 +94,7 @@ impl Widget {
     }
 
     pub fn collapsible<F>(
+        label: String,
         children: Vec<Widget>,
         expand: impl Into<Value<bool>>,
         ontoggle: F,
@@ -100,9 +105,11 @@ impl Widget {
         Self {
             type_of: WidgetType::Collapsible {
                 expand: expand.into(),
-                ontoggle: Box::new(ontoggle),
             },
-            children: Some(children),
+            children: Some(vec![
+                Widget::button(vec![Widget::text(label)], ontoggle, || {}),
+                Widget::panel(children),
+            ]),
             style: Style::default(),
         }
     }

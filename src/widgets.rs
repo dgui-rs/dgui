@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{Widget, events::Event, signal::Value};
+use crate::{events::Event, signal::Value};
 
 #[non_exhaustive]
 pub enum WidgetType {
@@ -9,14 +9,12 @@ pub enum WidgetType {
     Tabs {
         active: Value<u8>,
         onchange: Rc<dyn Fn(u8)>,
-        header: Vec<Widget>,
     },
     Tab {
         label: String,
     },
     Collapsible {
         expand: Value<bool>,
-        ontoggle: Box<dyn Fn()>,
     },
     Splitter,
     Window,
@@ -77,6 +75,7 @@ pub enum WidgetType {
         min: f64,
         max: f64,
     },
+
     Hyperlink {
         label: String,
         onclick: Box<dyn Fn()>,
