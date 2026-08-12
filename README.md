@@ -17,7 +17,7 @@ A renderer-agnostic reactive retained-mode GUI framework.
 - 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and Tailwind color palette.
 - 📦 Modular architecture with easy to use API.
-- 🚀 Lightweight, fast, and customizable.
+- 🚀 Lightweight and customizable.
 - 🔀 Native Node Graph Support.
 
 ### Example
