@@ -12,7 +12,7 @@ A renderer-agnostic reactive retained-mode GUI framework.
 
 ## Features
 
-- 🍁 Renderer agnostic — works with any graphics backend.
+- 📸 Renderer agnostic — works with any graphics backend.
 - ⚡ Built in Reactivity.
 - 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and Tailwind color palette.
