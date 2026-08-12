@@ -1,4 +1,4 @@
-# 🦀 dgui (desktop GUI)
+# 🦀 dgui (Desktop GUI)
 
 A renderer-agnostic reactive retained-mode GUI framework.
 
