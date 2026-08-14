@@ -77,7 +77,6 @@ pub enum WidgetType {
     },
 
     Hyperlink {
-        label: Value<String>,
         onclick: Box<dyn Fn()>,
     },
 

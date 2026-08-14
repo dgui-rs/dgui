@@ -1,4 +1,4 @@
-use crate::{DIRTY, Widget, signal::Flags};
+use crate::{DIRTY, Widget, signal::Flags, text::Text, widgets::WidgetType};
 use bounds::Bounds;
 use taffy::{Size, TaffyTree};
 use tessellate::Tessellate;
@@ -8,11 +8,14 @@ mod tessellate;
 
 pub struct Layout {
     pub tree: Widget,
+    pub text: Text,
 }
 
 impl Layout {
     pub fn new(layout: Widget) -> Self {
-        Self { tree: layout }
+        let mut text = Text::new(2048);
+        let tree = Self::init_buffer(layout, &mut text);
+        Self { tree, text }
     }
 
     pub fn flags() -> Flags {
@@ -35,5 +38,28 @@ impl Layout {
         Tessellate::tessellate(&self.tree, &tree, root);
 
         DIRTY.with(|f| f.set(Flags::UNSIGNALED));
+    }
+
+    fn init_buffer(mut widget: Widget, text_context: &mut Text) -> Widget {
+        if let Some(children) = widget.children {
+            let new_children: Vec<_> = children
+                .into_iter()
+                .map(|mut child| match child.type_of {
+                    WidgetType::Text { .. } | WidgetType::TextInput { .. } => {
+                        let font_size = child.style.font_size.unwrap_or(14.0);
+                        let line_height = child.style.line_height.unwrap_or(20.0);
+
+                        child.buffer = Some(text_context.create_buffer(font_size, line_height));
+
+                        child
+                    }
+                    _ => Self::init_buffer(child, text_context),
+                })
+                .collect();
+
+            widget.children = Some(new_children);
+        }
+
+        widget
     }
 }

@@ -1,5 +1,7 @@
 use std::{cell::Cell, rc::Rc};
 
+use cosmic_text::Buffer;
+
 use crate::{
     events::Event,
     signal::{Flags, Value},
@@ -22,6 +24,7 @@ pub struct Widget {
     pub(crate) type_of: WidgetType,
     pub(crate) children: Option<Vec<Widget>>,
     pub(crate) style: Style,
+    pub(crate) buffer: Option<Buffer>,
 }
 
 impl Widget {
@@ -30,6 +33,7 @@ impl Widget {
             type_of: WidgetType::Panel,
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -38,6 +42,7 @@ impl Widget {
             type_of: WidgetType::ScrollArea,
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -80,6 +85,7 @@ impl Widget {
             },
             children: Some(vec![Widget::panel(header), Widget::panel(tabs)]),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -88,6 +94,7 @@ impl Widget {
             type_of: WidgetType::Tab { label },
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -109,6 +116,7 @@ impl Widget {
                 Widget::panel(children),
             ]),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -117,6 +125,7 @@ impl Widget {
             type_of: WidgetType::Splitter,
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -125,6 +134,7 @@ impl Widget {
             type_of: WidgetType::Window,
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -140,6 +150,7 @@ impl Widget {
             },
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -154,6 +165,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -168,6 +180,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -182,6 +195,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -198,6 +212,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -214,6 +229,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -228,6 +244,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -243,6 +260,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -251,6 +269,7 @@ impl Widget {
             type_of: WidgetType::Text { text: text.into() },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -261,6 +280,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -271,6 +291,7 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -283,20 +304,21 @@ impl Widget {
             },
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
-    pub fn link<F>(label: impl Into<Value<String>>, onclick: F) -> Self
+    pub fn link<F>(children: Vec<Widget>, onclick: F) -> Self
     where
         F: Fn() + 'static,
     {
         Self {
             type_of: WidgetType::Hyperlink {
-                label: label.into(),
                 onclick: Box::new(onclick),
             },
-            children: None,
+            children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -305,6 +327,7 @@ impl Widget {
             type_of: WidgetType::Separator,
             children: None,
             style: Style::default(),
+            buffer: None,
         }
     }
 
@@ -313,11 +336,16 @@ impl Widget {
             type_of: WidgetType::Canvas,
             children: Some(children),
             style: Style::default(),
+            buffer: None,
         }
     }
 
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
+    }
+
+    pub(crate) fn set_buffer(&mut self, buffer: Buffer) {
+        self.buffer = Some(buffer)
     }
 }
