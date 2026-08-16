@@ -60,6 +60,8 @@ impl Bounds {
                             }
                         }
 
+                        WidgetType::Text { text } => todo!(),
+
                         _ => Self::build(child, tree),
                     })
                     .collect();
