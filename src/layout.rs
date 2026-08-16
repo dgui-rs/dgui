@@ -1,4 +1,10 @@
-use crate::{DIRTY, Widget, signal::Flags, text::Text, widgets::WidgetType};
+use crate::{
+    DIRTY, Widget,
+    error::{Error, Result},
+    signal::Flags,
+    text::Text,
+    widgets::WidgetType,
+};
 use bounds::Bounds;
 use taffy::{Size, TaffyTree};
 use tessellate::Tessellate;
@@ -12,10 +18,16 @@ pub struct Layout {
 }
 
 impl Layout {
-    pub fn new(layout: Widget) -> Self {
-        let mut text = Text::new(2048);
-        let tree = Self::init_buffer(layout, &mut text);
-        Self { tree, text }
+    pub fn new(layout: Widget) -> Result<Self> {
+        match layout.type_of {
+            WidgetType::MainPanel => {
+                let mut text = Text::new(2048);
+                let tree = Self::init_buffer(layout, &mut text);
+                Ok(Self { tree, text })
+            }
+
+            _ => Err(Error::InvalidRootWidget),
+        }
     }
 
     pub fn flags() -> Flags {

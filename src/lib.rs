@@ -9,6 +9,7 @@ use crate::{
     widgets::WidgetType,
 };
 
+pub mod error;
 mod events;
 pub mod layout;
 pub mod signal;
@@ -28,6 +29,15 @@ pub struct Widget {
 }
 
 impl Widget {
+    pub fn main(children: Vec<Widget>) -> Self {
+        Self {
+            type_of: WidgetType::MainPanel,
+            children: Some(children),
+            style: Style::default(),
+            buffer: None,
+        }
+    }
+
     pub fn panel(children: Vec<Widget>) -> Self {
         Self {
             type_of: WidgetType::Panel,
@@ -343,9 +353,5 @@ impl Widget {
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
-    }
-
-    pub(crate) fn set_buffer(&mut self, buffer: Buffer) {
-        self.buffer = Some(buffer)
     }
 }

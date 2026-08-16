@@ -4,6 +4,7 @@ use crate::{events::Event, signal::Value};
 
 #[non_exhaustive]
 pub enum WidgetType {
+    MainPanel,
     Panel,
     ScrollArea,
     Tabs {
