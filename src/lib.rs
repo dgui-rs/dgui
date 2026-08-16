@@ -67,26 +67,22 @@ impl Widget {
             .filter(|widget| matches!(widget.type_of, WidgetType::Tab { .. }))
             .collect();
 
-        let header: Vec<Widget> = tabs
-            .iter()
-            .enumerate()
-            .filter_map(|(index, widget)| match &widget.type_of {
-                WidgetType::Tab { label } => {
-                    let onchange = Rc::clone(&onchange);
-                    let index = index as u8;
+        let mut header: Vec<Widget> = vec![];
 
-                    Some(Widget::button(
-                        vec![Widget::text(label.get())],
-                        move || {
-                            onchange(index);
-                        },
-                        || {},
-                    ))
-                }
+        for (index, tab) in tabs.iter().enumerate() {
+            if let WidgetType::Tab { label } = &tab.type_of {
+                let onchange = Rc::clone(&onchange);
+                let index = index as u8;
 
-                _ => None,
-            })
-            .collect();
+                header.push(Widget::button(
+                    vec![Widget::text(label.clone())],
+                    move || {
+                        onchange(index);
+                    },
+                    || {},
+                ));
+            }
+        }
 
         Self {
             type_of: WidgetType::Tabs {

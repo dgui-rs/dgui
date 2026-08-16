@@ -45,6 +45,7 @@ impl<T> Clone for Signal<T> {
     }
 }
 
+#[derive(Clone)]
 pub enum Value<T> {
     Static(T),
     Dynamic(Signal<T>),
@@ -62,6 +63,12 @@ impl<T: Clone> Value<T> {
 impl<T> From<T> for Value<T> {
     fn from(value: T) -> Self {
         Self::Static(value)
+    }
+}
+
+impl<T: Clone> From<&Value<T>> for Value<T> {
+    fn from(value: &Value<T>) -> Self {
+        value.clone()
     }
 }
 
