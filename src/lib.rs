@@ -9,6 +9,7 @@ use crate::{
     widgets::WidgetType,
 };
 
+pub mod draw;
 pub mod error;
 mod events;
 pub mod layout;

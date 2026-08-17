@@ -19,13 +19,14 @@ A renderer-agnostic reactive retained-mode GUI framework.
 - 📦 Modular architecture with easy to use API.
 - 🚀 Lightweight and customizable.
 - 🔀 Native Node Graph Support.
+- 🖱️ Drag and Drop support
 
 ### Example
 
 ```rust
 let count = Signal::create(0);
 
-let ui = Widget::panel(
+let ui = Widget::main(
     vec![
         Widget::text(&count),
 
@@ -51,7 +52,7 @@ let layout = Layout::new(ui);
 
 let mut draw = layout.build();
 
-match layout.flags(){
+match layout.flags() {
     Flags::SIGNALED => {
        draw = layout.build();
     },
