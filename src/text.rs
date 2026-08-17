@@ -1,6 +1,3 @@
-pub mod atlas;
-// pub mod input; // For future text input
-
 use cosmic_text::{
     Attrs, Buffer, CacheKey, FontSystem, Metrics, Shaping, SwashCache, SwashContent,
 };
@@ -8,6 +5,9 @@ use std::collections::HashMap;
 
 use crate::{Widget, widgets::WidgetType};
 pub use atlas::Atlas;
+
+pub mod atlas;
+pub mod input;
 
 #[derive(Clone, Copy, Debug)]
 pub struct CachedGlyph {
