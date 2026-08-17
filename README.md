@@ -13,13 +13,13 @@ A lightweight `Retained-Mode GUI` framework.
 ## Features
 
 - 📸 Renderer agnostic — works with any graphics backend.
-- ⚡ Built in Reactivity.
+- ⚡ Built-in Fine-grained Reactivity.
 - 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and Tailwind color palette.
 - 📦 Modular architecture with easy to use API.
 - 🚀 Lightweight and customizable.
 - 🔀 Native Node Graph Support.
-- 🖱️ Drag and Drop support
+- 🖱️ Drag and Drop support.
 
 ### Example
 
