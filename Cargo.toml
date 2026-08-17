@@ -1,9 +1,9 @@
 [package]
 name = "dgui"
-version = "0.0.4"
+version = "0.1.0"
 edition = "2024"
 license = "MIT"
-description = "A renderer-agnostic reactive retained-mode GUI framework. (In Development)"
+description = "A lightweight, reactive retained-mode GUI framework."
 keywords = ["gui", "dgui"]
 categories = ["gui"]
 repository = "https://github.com/sumeeth05/dgui"
@@ -17,3 +17,4 @@ etagere = "0.3"
 keyframe = "1"
 thiserror = "2"
 svg = "0.18"
+bytemuck = "1"

@@ -31,6 +31,10 @@ impl Color {
             self.a + (target.a - self.a) * t,
         )
     }
+
+    pub const fn to_array(self) -> [f32; 4] {
+        [self.r, self.g, self.b, self.a]
+    }
 }
 
 impl Color {
@@ -300,7 +304,7 @@ impl Color {
     pub const VIOLET_700: Color = Self::hex(0x6d28d9);
     pub const VIOLET_800: Color = Self::hex(0x5b21b6);
     pub const VIOLET_900: Color = Self::hex(0x4c1d95);
-    pub const VIOLET_950: Color = Self::hex(0x1e1b4b);
+    pub const VIOLET_950: Color = Self::hex(0x2e1065);
 
     pub const PURPLE_50: Color = Self::hex(0xfaf5ff);
     pub const PURPLE_100: Color = Self::hex(0xf3e8ff);
