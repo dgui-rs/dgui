@@ -10,7 +10,7 @@ repository = "https://github.com/sumeeth05/dgui"
 homepage = "https://github.com/sumeeth05/dgui"
 
 [dependencies]
-taffy = "0.13"
+taffy = "0.14"
 lyon = "1"
 cosmic-text = "0.19"
 etagere = "0.3"

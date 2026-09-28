@@ -78,6 +78,16 @@ impl From<Dimension> for taffy::Dimension {
     }
 }
 
+impl From<Dimension> for taffy::LengthPercentageAuto {
+    fn from(dim: Dimension) -> Self {
+        match dim {
+            Dimension::Auto => taffy::LengthPercentageAuto::auto(),
+            Dimension::Px(v) => taffy::LengthPercentageAuto::length(v),
+            Dimension::Percent(v) => taffy::LengthPercentageAuto::percent(v),
+        }
+    }
+}
+
 impl From<Display> for taffy::Display {
     fn from(display: Display) -> Self {
         match display {
