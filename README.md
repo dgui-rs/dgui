@@ -18,8 +18,11 @@ A lightweight `Retained-Mode GUI` framework.
 - 🎭 CSS-inspired styling and Tailwind color palette.
 - 📦 Modular architecture with easy to use API.
 - 🚀 Lightweight and customizable.
-- 🔀 Native Node Graph Support.
 - 🖱️ Drag and Drop support.
+
+### On the way
+
+- 🔀 Native Node Graph Support.
 
 ### Example
 

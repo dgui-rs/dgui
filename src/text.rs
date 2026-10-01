@@ -5,8 +5,6 @@ use cosmic_text::{
 };
 use etagere::{AllocId, AtlasAllocator, size2};
 
-use crate::{Widget, widgets::WidgetType};
-
 pub const ATLAS_PADDING: i32 = 2;
 
 #[derive(Clone, Copy, Debug)]
@@ -41,102 +39,106 @@ impl Text {
         Buffer::new(&mut self.font_system, Metrics::new(font_size, line_height))
     }
 
-    pub fn shape(&mut self, widget: &mut Widget, width: f32) {
-        if let WidgetType::Text { text } = &widget.type_of
-            && let Some(buffer) = widget.buffer.as_mut()
-        {
-            buffer.set_text(&text.get(), &Attrs::new(), Shaping::Advanced, None);
-            buffer.set_size(Some(width), None);
-            buffer.shape_until_scroll(&mut self.font_system, false);
+    pub fn shape_and_measure(
+        font_system: &mut FontSystem,
+        buffer: &mut Buffer,
+        text: &str,
+        available_width: Option<f32>,
+    ) -> (f32, f32) {
+        buffer.set_size(available_width, None);
+        buffer.set_text(text, &Attrs::new(), Shaping::Advanced, None);
 
-            for run in buffer.layout_runs() {
-                for glyph in run.glyphs {
-                    let physical_glyph = glyph.physical((0.0, 0.0), 1.0);
-                    let key = physical_glyph.cache_key;
+        buffer.shape_until_scroll(font_system, false);
 
-                    if !self.atlas_cache.contains_key(&key) {
-                        let Some(image) = self.swash_cache.get_image(&mut self.font_system, key)
-                        else {
-                            self.atlas_cache.insert(key, None);
-                            continue;
-                        };
+        let mut max_width = 0.0_f32;
+        let mut lines = 0;
 
-                        let width = image.placement.width as i32 + ATLAS_PADDING * 2;
-                        let height = image.placement.height as i32 + ATLAS_PADDING * 2;
+        for run in buffer.layout_runs() {
+            max_width = max_width.max(run.line_w);
+            lines += 1;
+        }
 
-                        let alloc = match self.atlas.allocate(size2(width, height)) {
-                            Some(alloc) => alloc,
-                            None => {
-                                self.atlas.clear();
-                                self.atlas_cache.clear();
-                                self.atlas_data.fill(0);
+        let line_height = buffer.metrics().line_height;
+        let total_height = lines as f32 * line_height;
 
-                                self.atlas
-                                    .allocate(size2(width, height))
-                                    .expect("Glyph is too large to fit in the atlas at all!")
-                            }
-                        };
+        (max_width, total_height)
+    }
 
-                        let x0 = alloc.rectangle.min.x as u32 + ATLAS_PADDING as u32;
-                        let y0 = alloc.rectangle.min.y as u32 + ATLAS_PADDING as u32;
+    pub fn atlas_allocation(&mut self, buffer: &Buffer) {
+        for run in buffer.layout_runs() {
+            for glyph in run.glyphs {
+                let physical_glyph = glyph.physical((0.0, 0.0), 1.0);
+                let key = physical_glyph.cache_key;
 
-                        let x1 = x0 + image.placement.width;
-                        let y1 = y0 + image.placement.height;
+                if !self.atlas_cache.contains_key(&key) {
+                    let Some(image) = self.swash_cache.get_image(&mut self.font_system, key) else {
+                        self.atlas_cache.insert(key, None);
+                        continue;
+                    };
 
-                        let glyph_w = image.placement.width as usize;
-                        let glyph_h = image.placement.height as usize;
+                    let width = image.placement.width as i32 + ATLAS_PADDING * 2;
+                    let height = image.placement.height as i32 + ATLAS_PADDING * 2;
 
-                        let atlas_pitch = self.atlas_size as usize * 4;
+                    let alloc = match self.atlas.allocate(size2(width, height)) {
+                        Some(alloc) => alloc,
+                        None => {
+                            self.atlas.clear();
+                            self.atlas_cache.clear();
+                            self.atlas_data.fill(0);
+                            self.atlas
+                                .allocate(size2(width, height))
+                                .expect("Glyph is too large to fit in the atlas at all!")
+                        }
+                    };
 
-                        match image.content {
-                            SwashContent::Mask => {
-                                for row in 0..glyph_h {
-                                    let dest_start =
-                                        (y0 as usize + row) * atlas_pitch + (x0 as usize * 4);
+                    let x0 = alloc.rectangle.min.x as u32 + ATLAS_PADDING as u32;
+                    let y0 = alloc.rectangle.min.y as u32 + ATLAS_PADDING as u32;
+                    let x1 = x0 + image.placement.width;
+                    let y1 = y0 + image.placement.height;
 
-                                    let src_start = row * glyph_w;
+                    let glyph_w = image.placement.width as usize;
+                    let glyph_h = image.placement.height as usize;
+                    let atlas_pitch = self.atlas_size as usize * 4;
 
-                                    for col in 0..glyph_w {
-                                        let mask = image.data[src_start + col];
-                                        let dest_pixel = dest_start + col * 4;
-
-                                        self.atlas_data[dest_pixel] = 255;
-                                        self.atlas_data[dest_pixel + 1] = 255;
-                                        self.atlas_data[dest_pixel + 2] = 255;
-                                        self.atlas_data[dest_pixel + 3] = mask;
-                                    }
+                    match image.content {
+                        SwashContent::Mask => {
+                            for row in 0..glyph_h {
+                                let dest_start =
+                                    (y0 as usize + row) * atlas_pitch + (x0 as usize * 4);
+                                let src_start = row * glyph_w;
+                                for col in 0..glyph_w {
+                                    let dest_pixel = dest_start + col * 4;
+                                    self.atlas_data[dest_pixel] = 255;
+                                    self.atlas_data[dest_pixel + 1] = 255;
+                                    self.atlas_data[dest_pixel + 2] = 255;
+                                    self.atlas_data[dest_pixel + 3] = image.data[src_start + col];
                                 }
-                            }
-
-                            SwashContent::Color => {
-                                for row in 0..glyph_h {
-                                    let dest_start =
-                                        (y0 as usize + row) * atlas_pitch + (x0 as usize * 4);
-
-                                    let src_start = row * glyph_w * 4;
-
-                                    let len = glyph_w * 4;
-
-                                    self.atlas_data[dest_start..dest_start + len]
-                                        .copy_from_slice(&image.data[src_start..src_start + len]);
-                                }
-                            }
-
-                            _ => {
-                                self.atlas_cache.insert(key, None);
-                                continue;
                             }
                         }
-
-                        self.atlas_cache.insert(
-                            key,
-                            Some(CachedGlyph {
-                                rect: [x0, y0, x1, y1],
-                                offset: [image.placement.left, image.placement.top],
-                                alloc_id: alloc.id,
-                            }),
-                        );
+                        SwashContent::Color => {
+                            for row in 0..glyph_h {
+                                let dest_start =
+                                    (y0 as usize + row) * atlas_pitch + (x0 as usize * 4);
+                                let src_start = row * glyph_w * 4;
+                                let len = glyph_w * 4;
+                                self.atlas_data[dest_start..dest_start + len]
+                                    .copy_from_slice(&image.data[src_start..src_start + len]);
+                            }
+                        }
+                        _ => {
+                            self.atlas_cache.insert(key, None);
+                            continue;
+                        }
                     }
+
+                    self.atlas_cache.insert(
+                        key,
+                        Some(CachedGlyph {
+                            rect: [x0, y0, x1, y1],
+                            offset: [image.placement.left, image.placement.top],
+                            alloc_id: alloc.id,
+                        }),
+                    );
                 }
             }
         }

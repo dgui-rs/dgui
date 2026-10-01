@@ -1,16 +1,22 @@
 use crate::{
     DIRTY, Widget,
     error::{Error, Result},
-    signal::Flags,
+    signal::{Flags, Value},
     text::Text,
     widgets::WidgetType,
 };
 use bounds::Bounds;
+use cosmic_text::Buffer;
 use taffy::{Size, TaffyTree};
 use tessellate::Tessellate;
 
 mod bounds;
 mod tessellate;
+
+pub(crate) struct TextContext {
+    pub buffer: Buffer,
+    pub text: Value<String>,
+}
 
 pub struct Layout {
     pub tree: Widget,
@@ -35,20 +41,44 @@ impl Layout {
     }
 
     pub fn build(&mut self, width: f32, height: f32) {
-        let mut tree = TaffyTree::new();
-        let root = Bounds::build(&self.tree, &mut tree);
+        let mut tree = TaffyTree::<TextContext>::new();
 
-        tree.compute_layout(
+        let root = Bounds::build(&mut self.tree, &mut tree);
+        let fs = &mut self.text.font_system;
+
+        tree.compute_layout_with_measure(
             root,
             Size {
                 width: taffy::AvailableSpace::Definite(width),
                 height: taffy::AvailableSpace::Definite(height),
             },
+            |inputs, _node_id, context, _style| {
+                if let Some(ctx) = context {
+                    let constraint_width = match inputs.available_space.width {
+                        taffy::AvailableSpace::Definite(w) => Some(w),
+                        _ => None,
+                    };
+
+                    let current_text = ctx.text.get();
+                    let (measured_w, measured_h) = Text::shape_and_measure(
+                        fs,
+                        &mut ctx.buffer,
+                        &current_text,
+                        constraint_width,
+                    );
+
+                    taffy::LayoutOutput::from_outer_size(taffy::Size {
+                        width: inputs.known_dimensions.width.unwrap_or(measured_w),
+                        height: inputs.known_dimensions.height.unwrap_or(measured_h),
+                    })
+                } else {
+                    taffy::LayoutOutput::from_outer_size(taffy::Size::ZERO)
+                }
+            },
         )
         .unwrap();
 
         Tessellate::tessellate(&self.tree, &tree, root);
-
         DIRTY.with(|f| f.set(Flags::UNSIGNALED));
     }
 

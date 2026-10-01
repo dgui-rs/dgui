@@ -1,11 +1,11 @@
 use taffy::{NodeId, TaffyTree};
 
-use crate::Widget;
+use crate::{Widget, layout::TextContext};
 
 pub struct Tessellate;
 
 impl Tessellate {
-    pub fn tessellate(widget_tree: &Widget, taffy_tree: &TaffyTree<()>, node: NodeId) {}
+    pub fn tessellate(_widget_tree: &Widget, _taffy_tree: &TaffyTree<TextContext>, _node: NodeId) {}
 
     fn rect() {}
 

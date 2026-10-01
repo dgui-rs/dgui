@@ -1,30 +1,31 @@
 use taffy::TaffyTree;
 
-use crate::{Widget, widgets::WidgetType};
+use crate::{Widget, layout::TextContext, widgets::WidgetType};
 
 pub struct Bounds;
 
 impl Bounds {
-    pub fn build(widget: &Widget, tree: &mut TaffyTree<()>) -> taffy::NodeId {
-        match &widget.children {
+    pub fn build(widget: &mut Widget, tree: &mut TaffyTree<TextContext>) -> taffy::NodeId {
+        match &mut widget.children {
             Some(children) => {
                 let nodes: Vec<_> = children
-                    .iter()
+                    .iter_mut() // 1. Must be iter_mut()
                     .map(|child| match &child.type_of {
                         WidgetType::Tabs { active, .. } => {
-                            let nodes = child.children.as_ref().unwrap();
-                            let header = &nodes[0];
-                            let content = &nodes[1];
+                            let nodes = child.children.as_mut().unwrap();
 
-                            if let Some(tabs) =
-                                content.children.as_deref().filter(|t| !t.is_empty())
+                            let (header_slice, content_slice) = nodes.split_at_mut(1);
+                            let header = &mut header_slice[0];
+                            let content = &mut content_slice[0];
+
+                            if let Some(tabs) = content.children.as_mut().filter(|t| !t.is_empty())
                             {
                                 let header_node = Self::build(header, tree);
 
                                 let index = active.get() as usize;
                                 let active_index = if index < tabs.len() { index } else { 0 };
 
-                                let active_node = Self::build(&tabs[active_index], tree);
+                                let active_node = Self::build(&mut tabs[active_index], tree);
 
                                 tree.new_with_children(
                                     child.style.layout.clone(),
@@ -37,7 +38,11 @@ impl Bounds {
                         }
 
                         WidgetType::Collapsible { expand, .. } => {
-                            if let Some([header, content]) = child.children.as_deref() {
+                            if let Some(nodes) = child.children.as_mut() {
+                                let (header_slice, content_slice) = nodes.split_at_mut(1);
+                                let header = &mut header_slice[0];
+                                let content = &mut content_slice[0];
+
                                 let header_node = Self::build(header, tree);
 
                                 if expand.get() {
@@ -60,8 +65,6 @@ impl Bounds {
                             }
                         }
 
-                        WidgetType::Text { text } => todo!(),
-
                         _ => Self::build(child, tree),
                     })
                     .collect();
@@ -70,7 +73,21 @@ impl Bounds {
                     .unwrap()
             }
 
-            None => tree.new_leaf(widget.style.layout.clone()).unwrap(),
+            None => match &widget.type_of {
+                WidgetType::Text { text } => {
+                    let buffer = widget.buffer.take().expect("Buffer not initialized");
+
+                    let text_context = crate::layout::TextContext {
+                        buffer,
+                        text: text.clone(),
+                    };
+
+                    tree.new_leaf_with_context(widget.style.layout.clone(), text_context)
+                        .unwrap()
+                }
+
+                _ => tree.new_leaf(widget.style.layout.clone()).unwrap(),
+            },
         }
     }
 }
