@@ -7,7 +7,9 @@ pub struct Tessellate;
 impl Tessellate {
     pub fn tessellate(_widget_tree: &Widget, _taffy_tree: &TaffyTree<TextContext>, _node: NodeId) {}
 
-    fn rect() {}
+    fn rect() {
+        
+    }
 
     fn circle() {}
 
