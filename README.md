@@ -50,23 +50,6 @@ let ui = Widget::main(
     ],
     Style::default(),
 );
-
-
-//In Application Loop
-
-let layout = Layout::new(ui);
-
-let mut draw = layout.build();
-
-match layout.flags() {
-    Flags::SIGNALED => {
-       draw = layout.build();
-    },
-    Flags::UNSIGNALED => {
-        draw
-    },
-    _ => {}
-}
 ```
 
 ## 📄 License
