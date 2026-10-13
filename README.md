@@ -13,13 +13,12 @@ A lightweight `Declarative GUI` framework.
 ## Features
 
 - 📸 Renderer agnostic — works with any graphics backend.
-- ⚡ Event-Driven Rendering.
-- 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and Tailwind color palette.
+- ⚡ Lightweight and customizable.
 - 📦 Modular architecture with easy to use API.
-- 🚀 Lightweight and customizable.
 - 🖱️ Drag and Drop support.
 - 🔀 Native Node Graph Support.
+- 🎮 Built for desktop applications, tools, and games.
 
 ### If you haven't installed cargo generate yet
 
