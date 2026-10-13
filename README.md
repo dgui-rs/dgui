@@ -1,6 +1,6 @@
 # 🦀 dgui (Desktop GUI)
 
-A lightweight `Retained-Mode GUI` framework.
+A lightweight `Declarative GUI` framework.
 
 [![GitHub](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/sumeeth05/dgui)
 [![Crates.io](https://img.shields.io/crates/v/dgui.svg?color=orange)](https://crates.io/crates/dgui)
@@ -13,7 +13,7 @@ A lightweight `Retained-Mode GUI` framework.
 ## Features
 
 - 📸 Renderer agnostic — works with any graphics backend.
-- ⚡ Built-in Fine-grained Reactivity.
+- ⚡ Event-Driven Rendering.
 - 🎮 Built for desktop applications, tools, and games.
 - 🎭 CSS-inspired styling and Tailwind color palette.
 - 📦 Modular architecture with easy to use API.
