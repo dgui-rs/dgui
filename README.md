@@ -19,12 +19,15 @@ A lightweight `Retained-Mode GUI` framework.
 - 📦 Modular architecture with easy to use API.
 - 🚀 Lightweight and customizable.
 - 🖱️ Drag and Drop support.
-
-### On the way
-
 - 🔀 Native Node Graph Support.
 
-### Example
+### Scaffolding Your First Dgui Project
+
+```rust
+    cargo generate dgui-rs/template
+```
+
+### Api Example
 
 ```rust
 let count = Signal::create(0);
