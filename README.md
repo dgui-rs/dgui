@@ -21,9 +21,15 @@ A lightweight `Retained-Mode GUI` framework.
 - 🖱️ Drag and Drop support.
 - 🔀 Native Node Graph Support.
 
+### If you haven't installed cargo generate yet
+
+```bash
+cargo install cargo-generate --locked
+```
+
 ### Scaffolding Your First Dgui Project
 
-```rust
+```bash
 cargo generate dgui-rs/template
 ```
 
