@@ -24,7 +24,7 @@ A lightweight `Retained-Mode GUI` framework.
 ### Scaffolding Your First Dgui Project
 
 ```rust
-    cargo generate dgui-rs/template
+cargo generate dgui-rs/template
 ```
 
 ### Api Example
