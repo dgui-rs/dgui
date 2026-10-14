@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use cosmic_text::{
     Attrs, Buffer, CacheKey, FontSystem, Metrics, Shaping, SwashCache, SwashContent,
 };
-use etagere::{AllocId, AtlasAllocator, size2};
+use etagere::{AtlasAllocator, size2};
 
 pub const ATLAS_PADDING: i32 = 2;
 
@@ -11,7 +11,6 @@ pub const ATLAS_PADDING: i32 = 2;
 pub struct CachedGlyph {
     pub(crate) rect: [u32; 4],
     pub(crate) offset: [i32; 2],
-    pub(crate) alloc_id: AllocId,
 }
 
 pub struct Text {
@@ -136,7 +135,6 @@ impl Text {
                         Some(CachedGlyph {
                             rect: [x0, y0, x1, y1],
                             offset: [image.placement.left, image.placement.top],
-                            alloc_id: alloc.id,
                         }),
                     );
                 }

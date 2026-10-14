@@ -60,12 +60,12 @@ impl Style {
     }
 
     pub fn align_items(mut self, align: AlignItems) -> Self {
-        self.layout.align_items = Some(align.into());
+        self.layout.align_items = align.into();
         self
     }
 
     pub fn justify_content(mut self, justify: JustifyContent) -> Self {
-        self.layout.justify_content = Some(justify.into());
+        self.layout.justify_content = justify.into();
         self
     }
 

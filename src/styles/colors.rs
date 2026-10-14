@@ -1,3 +1,4 @@
+#[derive(Clone, Copy, Debug)]
 pub struct Color {
     pub r: f32,
     pub g: f32,
@@ -20,6 +21,15 @@ impl Color {
     pub const fn opacity(mut self, a: f32) -> Self {
         self.a = a;
         self
+    }
+
+    pub fn to_rgba8(self) -> [u8; 4] {
+        [
+            (self.r.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.g.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.b.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.a.clamp(0.0, 1.0) * 255.0) as u8,
+        ]
     }
 
     pub fn lerp(self, target: Color, t: f32) -> Color {

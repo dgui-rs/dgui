@@ -1,5 +1,5 @@
 #[repr(C)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     pub pos: [f32; 2],
     pub uv: [f32; 2],
@@ -7,7 +7,7 @@ pub struct Vertex {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub enum TextureSource {
+pub enum Texture {
     Atlas,
     Custom(u64),
 }
@@ -15,15 +15,12 @@ pub enum TextureSource {
 pub struct Mesh {
     pub vertices: Vec<Vertex>,
     pub indices: Vec<u32>,
-}
-
-pub struct DrawBatch {
-    pub mesh: Mesh,
     pub scissor: Option<[u32; 4]>,
-    pub texture: TextureSource,
+    pub texture: Texture,
 }
 
 pub struct Output<'a> {
-    pub batches: Vec<DrawBatch>,
+    pub list: Vec<Mesh>,
     pub atlas_pixels: &'a [u8],
+    pub atlas_size: u32,
 }

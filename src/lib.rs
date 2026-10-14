@@ -27,6 +27,7 @@ pub struct Widget {
     pub(crate) children: Option<Vec<Widget>>,
     pub(crate) style: Style,
     pub(crate) buffer: Option<Buffer>,
+    pub(crate) id: Option<taffy::NodeId>,
 }
 
 impl Widget {
@@ -36,6 +37,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -45,6 +47,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -54,6 +57,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -93,6 +97,7 @@ impl Widget {
             children: Some(vec![Widget::panel(header), Widget::panel(tabs)]),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -102,6 +107,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -124,6 +130,7 @@ impl Widget {
             ]),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -133,6 +140,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -142,6 +150,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -158,6 +167,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -173,6 +183,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -188,6 +199,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -203,6 +215,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -220,6 +233,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -237,6 +251,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -252,6 +267,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -268,6 +284,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -277,6 +294,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -288,6 +306,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -299,6 +318,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -312,6 +332,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -326,6 +347,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -335,6 +357,7 @@ impl Widget {
             children: None,
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 
@@ -344,6 +367,7 @@ impl Widget {
             children: Some(children),
             style: Style::default(),
             buffer: None,
+            id: None,
         }
     }
 

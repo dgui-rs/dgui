@@ -1,5 +1,6 @@
 use crate::{
     DIRTY, Widget,
+    draw::Output,
     error::{Error, Result},
     signal::{Flags, Value},
     text::Text,
@@ -14,7 +15,7 @@ mod bounds;
 mod tessellate;
 
 pub(crate) struct TextContext {
-    pub buffer: Buffer,
+    pub buffer: Option<Buffer>,
     pub text: Value<String>,
 }
 
@@ -40,7 +41,7 @@ impl Layout {
         DIRTY.with(|f| f.get())
     }
 
-    pub fn build(&mut self, width: f32, height: f32) {
+    pub fn build(&mut self, width: f32, height: f32) -> Output<'_> {
         let mut tree = TaffyTree::<TextContext>::new();
 
         let root = Bounds::build(&mut self.tree, &mut tree);
@@ -62,7 +63,7 @@ impl Layout {
                     let current_text = ctx.text.get();
                     let (measured_w, measured_h) = Text::shape_and_measure(
                         fs,
-                        &mut ctx.buffer,
+                        ctx.buffer.as_mut().unwrap(),
                         &current_text,
                         constraint_width,
                     );
@@ -78,8 +79,14 @@ impl Layout {
         )
         .unwrap();
 
-        Tessellate::tessellate(&self.tree, &tree, root);
+        let list = Tessellate::tessellate(&mut self.tree, &mut tree, &mut self.text);
         DIRTY.with(|f| f.set(Flags::UNSIGNALED));
+
+        Output {
+            list,
+            atlas_pixels: &self.text.atlas_data,
+            atlas_size: self.text.atlas_size,
+        }
     }
 
     fn init_buffer(mut widget: Widget, text_context: &mut Text) -> Widget {
