@@ -1,87 +1,121 @@
-use std::rc::Rc;
+use cosmic_text::Buffer;
 
-use crate::{events::Event, signal::Value};
+use crate::{signal::Value, style::Style};
 
 #[non_exhaustive]
-pub enum WidgetType {
-    MainPanel,
-    Panel,
-    ScrollArea,
-    Tabs {
-        active: Value<u8>,
-        onchange: Rc<dyn Fn(u8)>,
-    },
-    Tab {
-        label: Value<String>,
-    },
-    Collapsible {
-        expand: Value<bool>,
-    },
-    Splitter,
-    Window,
-
-    Button {
-        onclick: Box<dyn Fn()>,
-        onhover: Box<dyn Fn()>,
-    },
-    Checkbox {
-        checked: Value<bool>,
-        ontoggle: Box<dyn Fn()>,
-    },
-    Switch {
-        checked: Value<bool>,
-        ontoggle: Box<dyn Fn()>,
-    },
-    RadioButton {
-        selected: Value<bool>,
-        onchange: Box<dyn Fn()>,
-    },
-    Slider {
-        value: Value<f64>,
-        min: f64,
-        max: f64,
-        onchange: Box<dyn Fn()>,
-    },
-    DragValue {
-        value: Value<f64>,
-        min: f64,
-        max: f64,
-        onchange: Box<dyn Fn()>,
-    },
-    TextInput {
-        value: Value<String>,
-        onchange: Box<dyn Fn(Event)>,
-    },
-
-    Select {
-        default: Value<String>,
-        options: Vec<String>,
-        onchange: Box<dyn Fn()>,
-    },
-
+#[allow(dead_code)]
+pub enum Type {
+    //display
     Text {
         text: Value<String>,
     },
-
-    Icon {
-        source: Value<String>,
+    Link {
+        src: Value<String>,
     },
-
     Image {
-        source: Value<String>,
+        src: Value<String>,
     },
-
-    ProgressBar {
-        value: Value<f64>,
-        min: f64,
-        max: f64,
+    Progress {
+        value: Value<f32>,
     },
-
-    Hyperlink {
-        onclick: Box<dyn Fn()>,
-    },
-
     Separator,
+    Svg {
+        src: Value<String>,
+    },
 
+    //layout
+    Panel,
+    Modal,
+    Column,
+    Row,
+    Grid {
+        cols: u8,
+        rows: u8,
+    },
+    Scrollarea,
+
+    //interactive
+    Button {
+        text: Value<String>,
+    },
+    ImageButton,
+    Checkbox {
+        checked: Value<bool>,
+    },
+    RadioButton {
+        checked: Value<bool>,
+    },
+    Select {
+        selected: Value<String>,
+        options: Vec<String>,
+    },
+    Slider {
+        value: Value<f32>,
+    },
+    DragValue {
+        value: Value<f32>,
+    },
+    Input {
+        value: Value<String>,
+    },
+    Switch {
+        toggle: Value<bool>,
+    },
+
+    //special
+    Menu,
+    Accordion,
+
+    // Graphs and custom rendering
+    Node,
     Canvas,
+
+    //color
+    ColorWheel,
+    ColorPad,
+    Hue,
+    Lightness,
+    Alpha,
+}
+
+pub struct Widget {
+    pub type_of: Type,
+    pub children: Vec<Widget>,
+    pub styles: Style,
+    pub buffer: Option<Buffer>,
+}
+
+impl Widget {
+    pub fn child(mut self, child: Widget) -> Self {
+        self.children.push(child);
+        self
+    }
+
+    pub fn children(mut self, children: Vec<Widget>) -> Self {
+        self.children.extend(children);
+        self
+    }
+
+    pub fn styles(mut self, styles: Style) -> Self {
+        self.styles = styles;
+        self
+    }
+
+    pub fn on_click() {}
+
+    pub fn on_hover() {}
+
+    pub fn on_change() {}
+
+    pub fn on_press() {}
+
+    pub fn on_release() {}
+
+    pub fn on_key_down() {}
+
+    pub fn on_key_up() {}
+
+    pub fn on_focus() {}
+
+    pub fn on_blur() {}
 }

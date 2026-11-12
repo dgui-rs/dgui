@@ -1,10 +1,10 @@
-mod colors;
+mod color;
 mod types;
 
-pub use colors::Color;
+pub use color::Color;
 use taffy::{LengthPercentage, Rect, Size};
 pub use types::{
-    AlignItems, Dimension, Display, FlexDirection, FontStyle, JustifyContent, Spacing,
+    AlignItems, Dimension, Display, FlexDirection, FontStyle, FontWeight, JustifyContent, Spacing,
 };
 
 #[derive(Default)]
@@ -12,9 +12,10 @@ pub struct Style {
     pub(crate) layout: taffy::style::Style,
     pub(crate) color: Option<Color>,
     pub(crate) background_color: Option<Color>,
+    pub(crate) border_color: Option<Color>,
     pub(crate) border_radius: Option<f32>,
     pub(crate) font_size: Option<f32>,
-    pub(crate) font_weight: Option<f32>,
+    pub(crate) font_weight: Option<FontWeight>,
     pub(crate) font_style: Option<FontStyle>,
     pub(crate) line_height: Option<f32>,
     pub(crate) tracking: Option<f32>,
@@ -180,6 +181,11 @@ impl Style {
         self
     }
 
+    pub fn border_color(mut self, color: Color) -> Self {
+        self.border_color = Some(color);
+        self
+    }
+
     pub fn border_radius(mut self, px: f32) -> Self {
         self.border_radius = Some(px);
         self
@@ -200,7 +206,7 @@ impl Style {
         self
     }
 
-    pub fn font_weight(mut self, weight: f32) -> Self {
+    pub fn font_weight(mut self, weight: FontWeight) -> Self {
         self.font_weight = Some(weight);
         self
     }

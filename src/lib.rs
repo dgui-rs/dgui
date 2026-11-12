@@ -1,378 +1,373 @@
-use std::{cell::Cell, rc::Rc};
+#![allow(dead_code)]
 
-use cosmic_text::Buffer;
+use std::cell::Cell;
 
 use crate::{
-    events::Event,
+    bounds::Bounds,
+    output::LayoutBuffer,
     signal::{Flags, Value},
-    styles::Style,
-    widgets::WidgetType,
+    style::Style,
+    tessellate::Tessellate,
+    text::Text,
+    widgets::Widget,
 };
 
-pub mod draw;
-pub mod error;
-mod events;
-pub mod layout;
+mod bounds;
+pub mod event;
+pub mod output;
 pub mod signal;
-pub mod styles;
+pub mod style;
+mod tessellate;
 mod text;
 mod widgets;
 
 thread_local! {
-  pub(crate)  static DIRTY: Cell<Flags> = const { Cell::new(Flags::UNSIGNALED) };
+  pub  static DIRTY: Cell<Flags> = const { Cell::new(Flags::UNSIGNALED) };
 }
 
-pub struct Widget {
-    pub(crate) type_of: WidgetType,
-    pub(crate) children: Option<Vec<Widget>>,
-    pub(crate) style: Style,
-    pub(crate) buffer: Option<Buffer>,
-    pub(crate) id: Option<taffy::NodeId>,
+pub struct Context {
+    pub tree: Option<Widget>,
+    pub(crate) layout_buffer: Option<LayoutBuffer>,
+    pub(crate) text: Text,
 }
 
-impl Widget {
-    pub fn main(children: Vec<Widget>) -> Self {
+impl Context {
+    pub fn new(atlas_size: i32) -> Self {
         Self {
-            type_of: WidgetType::MainPanel,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
+            tree: None,
+            layout_buffer: None,
+            text: Text::new(atlas_size),
         }
     }
 
-    pub fn panel(children: Vec<Widget>) -> Self {
-        Self {
-            type_of: WidgetType::Panel,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn scrollarea(children: Vec<Widget>) -> Self {
-        Self {
-            type_of: WidgetType::ScrollArea,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn tabs<F>(children: Vec<Widget>, active: impl Into<Value<u8>>, onchange: F) -> Self
-    where
-        F: Fn(u8) + 'static,
-    {
-        let onchange = Rc::new(onchange);
-
-        let tabs: Vec<Widget> = children
-            .into_iter()
-            .filter(|widget| matches!(widget.type_of, WidgetType::Tab { .. }))
-            .collect();
-
-        let mut header: Vec<Widget> = vec![];
-
-        for (index, tab) in tabs.iter().enumerate() {
-            if let WidgetType::Tab { label } = &tab.type_of {
-                let onchange = Rc::clone(&onchange);
-                let index = index as u8;
-
-                header.push(Widget::button(
-                    vec![Widget::text(label.clone())],
-                    move || {
-                        onchange(index);
-                    },
-                    || {},
-                ));
-            }
-        }
-
-        Self {
-            type_of: WidgetType::Tabs {
-                active: active.into(),
-                onchange,
-            },
-            children: Some(vec![Widget::panel(header), Widget::panel(tabs)]),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn tab(children: Vec<Widget>, label: Value<String>) -> Self {
-        Self {
-            type_of: WidgetType::Tab { label },
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn collapsible<F>(
-        label: String,
-        children: Vec<Widget>,
-        expand: impl Into<Value<bool>>,
-        ontoggle: F,
-    ) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Collapsible {
-                expand: expand.into(),
-            },
-            children: Some(vec![
-                Widget::button(vec![Widget::text(label)], ontoggle, || {}),
-                Widget::panel(children),
-            ]),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn splitter(children: Vec<Widget>) -> Self {
-        Self {
-            type_of: WidgetType::Splitter,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn window(children: Vec<Widget>) -> Self {
-        Self {
-            type_of: WidgetType::Window,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn button<F1, F2>(children: Vec<Widget>, onclick: F1, onhover: F2) -> Self
-    where
-        F1: Fn() + 'static,
-        F2: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Button {
-                onclick: Box::new(onclick),
-                onhover: Box::new(onhover),
-            },
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn switch<F>(value: impl Into<Value<bool>>, ontoggle: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Switch {
-                checked: value.into(),
-                ontoggle: Box::new(ontoggle),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn checkbox<F>(value: impl Into<Value<bool>>, ontoggle: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Checkbox {
-                checked: value.into(),
-                ontoggle: Box::new(ontoggle),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn radio_button<F>(selected: impl Into<Value<bool>>, onchange: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::RadioButton {
-                selected: selected.into(),
-                onchange: Box::new(onchange),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn slider<F>(value: impl Into<Value<f64>>, min: f64, max: f64, onchange: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Slider {
-                value: value.into(),
-                min,
-                max,
-                onchange: Box::new(onchange),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn drag_value<F>(value: impl Into<Value<f64>>, min: f64, max: f64, onchange: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::DragValue {
-                value: value.into(),
-                min,
-                max,
-                onchange: Box::new(onchange),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn text_input<F>(value: impl Into<Value<String>>, onchange: F) -> Self
-    where
-        F: Fn(Event) + 'static,
-    {
-        Self {
-            type_of: WidgetType::TextInput {
-                value: value.into(),
-                onchange: Box::new(onchange),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn select<F>(default: impl Into<Value<String>>, options: Vec<String>, onchange: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Select {
-                default: default.into(),
-                options,
-                onchange: Box::new(onchange),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn text(text: impl Into<Value<String>>) -> Self {
-        Self {
-            type_of: WidgetType::Text { text: text.into() },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn icon(source: impl Into<Value<String>>) -> Self {
-        Self {
-            type_of: WidgetType::Icon {
-                source: source.into(),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn image(source: impl Into<Value<String>>) -> Self {
-        Self {
-            type_of: WidgetType::Image {
-                source: source.into(),
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn progress(value: impl Into<Value<f64>>, min: f64, max: f64) -> Self {
-        Self {
-            type_of: WidgetType::ProgressBar {
-                value: value.into(),
-                min,
-                max,
-            },
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn link<F>(children: Vec<Widget>, onclick: F) -> Self
-    where
-        F: Fn() + 'static,
-    {
-        Self {
-            type_of: WidgetType::Hyperlink {
-                onclick: Box::new(onclick),
-            },
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn separator() -> Self {
-        Self {
-            type_of: WidgetType::Separator,
-            children: None,
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn canvas(children: Vec<Widget>) -> Self {
-        Self {
-            type_of: WidgetType::Canvas,
-            children: Some(children),
-            style: Style::default(),
-            buffer: None,
-            id: None,
-        }
-    }
-
-    pub fn style(mut self, style: Style) -> Self {
-        self.style = style;
+    pub fn builder(mut self, tree: Widget) -> Self {
+        self.tree = Some(tree);
         self
+    }
+
+    pub fn compute(&mut self) -> LayoutBuffer {
+        if self.layout_buffer.is_none() {
+            DIRTY.with(|flags| flags.set(Flags::SIGNALED));
+        }
+
+        let flags = DIRTY.with(|f| f.get());
+
+        match flags {
+            Flags::SIGNALED => {
+                let computed_layout = Bounds::compute(self);
+
+                let geometry = Tessellate::build(&computed_layout, self);
+
+                self.layout_buffer = Some(geometry);
+
+                DIRTY.with(|flags| flags.set(Flags::UNSIGNALED));
+
+                geometry
+            }
+
+            Flags::UNSIGNALED => self.layout_buffer.unwrap(),
+        }
+    }
+
+    //display
+
+    pub fn text(&mut self, text: impl Into<Value<String>>) -> Widget {
+        let buffer = self.text.create_buffer(15.0, 20.0);
+
+        Widget {
+            type_of: widgets::Type::Text { text: text.into() },
+            children: vec![],
+            styles: Style::default(),
+            buffer: Some(buffer),
+        }
+    }
+
+    pub fn link(&self, src: impl Into<Value<String>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Link { src: src.into() },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn image(&self, src: impl Into<Value<String>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Image { src: src.into() },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn progress(&self, value: impl Into<Value<f32>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Progress {
+                value: value.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn separator(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Separator,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn svg(&self, src: impl Into<Value<String>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Svg { src: src.into() },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    //layout
+
+    pub fn panel(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Panel,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn modal(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Modal,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn column(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Column,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn row(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Row,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn grid(&self, cols: u8, rows: u8) -> Widget {
+        Widget {
+            type_of: widgets::Type::Grid { cols, rows },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn scrollarea(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Scrollarea,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    //interactive
+
+    pub fn button(&self, text: impl Into<Value<String>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Button { text: text.into() },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn image_button(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::ImageButton,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn checkbox(&self, checked: impl Into<Value<bool>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Checkbox {
+                checked: checked.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn radio_button(&self, checked: impl Into<Value<bool>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::RadioButton {
+                checked: checked.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn select(&self, selected: impl Into<Value<String>>, options: Vec<String>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Select {
+                selected: selected.into(),
+                options,
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn slider(&self, value: impl Into<Value<f32>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Slider {
+                value: value.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn drag_value(&self, value: impl Into<Value<f32>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::DragValue {
+                value: value.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn input(&mut self, value: impl Into<Value<String>>) -> Widget {
+        let buffer = self.text.create_buffer(15.0, 20.0);
+
+        Widget {
+            type_of: widgets::Type::Input {
+                value: value.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: Some(buffer),
+        }
+    }
+
+    pub fn switch(&self, toggle: impl Into<Value<bool>>) -> Widget {
+        Widget {
+            type_of: widgets::Type::Switch {
+                toggle: toggle.into(),
+            },
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    //special
+
+    pub fn menu(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Menu,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn accordion(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Accordion,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    // Graphs and custom rendering
+
+    pub fn canvas(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Canvas,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn node(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Node,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    //color
+    pub fn color_wheel(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::ColorWheel,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn hue_strip(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Hue,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn lightness_strip(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Lightness,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn alpha_strip(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::Alpha,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
+    }
+
+    pub fn color_pad(&self) -> Widget {
+        Widget {
+            type_of: widgets::Type::ColorPad,
+            children: vec![],
+            styles: Style::default(),
+            buffer: None,
+        }
     }
 }

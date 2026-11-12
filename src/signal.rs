@@ -2,8 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use crate::DIRTY;
 
-#[non_exhaustive]
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Flags {
     SIGNALED,
     UNSIGNALED,

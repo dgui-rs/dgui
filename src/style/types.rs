@@ -1,19 +1,36 @@
+#[derive(Clone, Copy, Debug)]
 pub enum FontStyle {
     Normal,
     Italic,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub enum FontWeight {
+    Thin,
+    ExtraLight,
+    Light,
+    Normal,
+    Medium,
+    SemiBold,
+    Bold,
+    ExtraBold,
+    Black,
+}
+
+#[derive(Clone, Copy, Debug)]
 pub enum Dimension {
     Auto,
     Px(f32),
     Percent(f32),
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum Spacing {
     Px(f32),
     Percent(f32),
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum Display {
     Block,
     Flex,
@@ -21,6 +38,7 @@ pub enum Display {
     None,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum FlexDirection {
     Row,
     Column,
@@ -28,6 +46,7 @@ pub enum FlexDirection {
     ColumnReverse,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum AlignItems {
     Start,
     End,
@@ -36,6 +55,7 @@ pub enum AlignItems {
     Stretch,
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum JustifyContent {
     FlexStart,
     FlexEnd,
