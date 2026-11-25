@@ -1,16 +1,21 @@
-use cosmic_text::Buffer;
+use std::cell::Cell;
 
-use crate::{signal::Value, style::Style};
+use taffy::NodeId;
+
+use crate::{
+    signal::{TextValue, Value},
+    style::Style,
+};
 
 #[non_exhaustive]
-#[allow(dead_code)]
-pub enum Type {
+pub enum WidgetType {
     //display
     Text {
-        text: Value<String>,
+        text: Box<dyn TextValue>,
+        font_name: Option<String>,
     },
     Link {
-        src: Value<String>,
+        label: Value<String>,
     },
     Image {
         src: Value<String>,
@@ -38,7 +43,7 @@ pub enum Type {
     Button {
         text: Value<String>,
     },
-    ImageButton,
+    Clickable,
     Checkbox {
         checked: Value<bool>,
     },
@@ -67,7 +72,9 @@ pub enum Type {
     Accordion,
 
     // Graphs and custom rendering
-    Node,
+    Node {
+        title: Value<String>,
+    },
     Canvas,
 
     //color
@@ -79,10 +86,10 @@ pub enum Type {
 }
 
 pub struct Widget {
-    pub type_of: Type,
+    pub type_of: WidgetType,
     pub children: Vec<Widget>,
     pub styles: Style,
-    pub buffer: Option<Buffer>,
+    pub node_id: Cell<Option<NodeId>>,
 }
 
 impl Widget {
@@ -118,4 +125,19 @@ impl Widget {
     pub fn on_focus() {}
 
     pub fn on_blur() {}
+
+    pub fn add_input_pin() {}
+
+    pub fn add_output_pin() {}
+}
+
+#[derive(Default)]
+pub struct Pin {
+    title: String,
+    connection_id: String,
+}
+
+impl Pin {
+    pub fn connect() {}
+    pub fn disconnect() {}
 }

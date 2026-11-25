@@ -17,16 +17,30 @@ impl Color {
             bytes => bytes,
         };
 
-        let rgb = match const_hex::const_decode_to_array::<4>(stripped) {
-            Ok(b) => b,
-            Err(_) => panic!("Invalid hex color string"),
+        let [r, g, b, a] = match stripped.len() {
+            3 => match const_hex::const_decode_to_array::<3>(stripped) {
+                Ok([r, g, b]) => [r, g, b, 255],
+                Err(_) => panic!("Invalid hex color string"),
+            },
+
+            6 => match const_hex::const_decode_to_array::<3>(stripped) {
+                Ok([r, g, b]) => [r, g, b, 255],
+                Err(_) => panic!("Invalid hex color string"),
+            },
+
+            8 => match const_hex::const_decode_to_array::<4>(stripped) {
+                Ok(rgba) => rgba,
+                Err(_) => panic!("Invalid hex color string"),
+            },
+
+            _ => panic!("Hex color must be 3 or 6 or 8 characters long"),
         };
 
         Self {
-            r: rgb[0] as f32 / 255.0,
-            g: rgb[1] as f32 / 255.0,
-            b: rgb[2] as f32 / 255.0,
-            a: rgb[3] as f32 / 255.0,
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
         }
     }
 
@@ -44,8 +58,8 @@ impl Color {
         ]
     }
 
-    pub fn lerp(self, target: Color, t: f32) -> Color {
-        let t = t.clamp(0.0, 1.0);
+    pub fn lerp(self, target: Color, dt: f32) -> Color {
+        let t = dt.clamp(0.0, 1.0);
         Color::rgba(
             self.r + (target.r - self.r) * t,
             self.g + (target.g - self.g) * t,

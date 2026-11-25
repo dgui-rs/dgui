@@ -10,11 +10,9 @@ pub enum FontWeight {
     ExtraLight,
     Light,
     Normal,
-    Medium,
     SemiBold,
     Bold,
     ExtraBold,
-    Black,
 }
 
 #[derive(Clone, Copy, Debug)]

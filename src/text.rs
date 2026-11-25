@@ -1,9 +1,16 @@
-use std::collections::HashMap;
+use std::sync::Arc;
 
-use cosmic_text::{Attrs, Buffer, CacheKey, FontSystem, Metrics, Shaping, SwashCache};
-use etagere::{AtlasAllocator, size2};
+use parley::{
+    FontContext, FontWeight, Layout, LayoutContext,
+    StyleProperty::{self},
+    fontique::Blob,
+};
 
-use crate::text::atlas::Atlas;
+use crate::{
+    style,
+    text::atlas::Atlas,
+    widgets::{Widget, WidgetType},
+};
 
 pub mod atlas;
 mod editor;
@@ -15,49 +22,111 @@ pub struct CachedGlyph {
 }
 
 pub struct Text {
-    pub fontsystem: FontSystem,
-    pub swash_cache: SwashCache,
+    pub font: FontContext,
+    pub layout: LayoutContext<[f32; 4]>,
     pub atlas: Atlas,
 }
 
 impl Text {
-    pub fn new(atlas_size: i32) -> Self {
+    pub(crate) fn new() -> Self {
+        let mut font = FontContext::new();
+
+        let regular = include_bytes!("../font/Inter-Variable.ttf");
+        let italic = include_bytes!("../font/Inter-Italic.ttf");
+
+        let blob_r: Blob<u8> = Blob::new(Arc::new(regular));
+
+        let blob_i: Blob<u8> = Blob::new(Arc::new(italic));
+
+        let _ = font.collection.register_fonts(blob_r, None);
+
+        let _ = font.collection.register_fonts(blob_i, None);
+
         Self {
-            fontsystem: FontSystem::new(),
-            swash_cache: SwashCache::new(),
-            atlas: Atlas {
-                allocator: AtlasAllocator::new(size2(atlas_size, atlas_size)),
-                size: atlas_size,
-                data: vec![0; (atlas_size * atlas_size * 4) as usize],
-                cache: HashMap::new(),
-            },
+            font,
+            layout: LayoutContext::new(),
+            atlas: Atlas::new(),
         }
     }
 
-    pub fn create_buffer(&mut self, font_size: f32, line_height: f32) -> Buffer {
-        Buffer::new(&mut self.fontsystem, Metrics::new(font_size, line_height))
+    pub(crate) fn shape(&mut self, widget: &Widget, dpi: f32) -> Layout<[f32; 4]> {
+        let mut layout: Option<Layout<[f32; 4]>> = None;
+
+        match &widget.type_of {
+            WidgetType::Text { text, font_name } => {
+                let text = text.get();
+
+                layout = Some(self.build(widget, text, font_name, dpi));
+            }
+
+            WidgetType::Link { label } => {
+                let text = label.get();
+                layout = Some(self.build(widget, text, &None, dpi));
+            }
+
+            WidgetType::Button { text } => {
+                let text = text.get();
+
+                layout = Some(self.build(widget, text, &None, dpi));
+            }
+
+            _ => {}
+        };
+
+        layout.unwrap()
     }
 
-    pub fn set_text(&mut self, buffer: &mut Buffer, text: &str, attrs: Attrs) {
-        buffer.set_text(text, &attrs, Shaping::Advanced, None);
-    }
+    fn build(
+        &mut self,
+        widget: &Widget,
+        text: String,
+        font_name: &Option<String>,
+        dpi: f32,
+    ) -> Layout<[f32; 4]> {
+        let mut builder = self.layout.ranged_builder(&mut self.font, &text, dpi, true);
 
-    pub fn measure(&mut self, buffer: &mut Buffer, available_width: Option<f32>) -> (f32, f32) {
-        buffer.set_size(available_width, None);
-        buffer.shape_until_scroll(&mut self.fontsystem, false);
+        let weight: f32 = match widget.styles.font_weight {
+            style::FontWeight::Thin => 100.0,
+            style::FontWeight::ExtraLight => 200.0,
+            style::FontWeight::Light => 300.0,
+            style::FontWeight::Normal => 400.0,
+            style::FontWeight::SemiBold => 500.0,
+            style::FontWeight::Bold => 600.0,
+            style::FontWeight::ExtraBold => 700.0,
+        };
 
-        let mut max_width = 0.0_f32;
-        let mut total_height = 0.0_f32;
+        let font_style = match widget.styles.font_style {
+            style::FontStyle::Normal => parley::FontStyle::Normal,
+            style::FontStyle::Italic => parley::FontStyle::Italic,
+        };
 
-        for run in buffer.layout_runs() {
-            max_width = max_width.max(run.line_w);
-            total_height += run.line_height;
-        }
+        let name = match font_name {
+            Some(name) => name,
+            None => "Inter",
+        };
 
-        (max_width, total_height)
-    }
+        let color = widget.styles.color;
 
-    pub fn find_glyph(&self, key: CacheKey) -> Option<&CachedGlyph> {
-        self.atlas.cache.get(&key)
+        builder.push_default(StyleProperty::FontFamily(parley::FontFamily::Source(
+            std::borrow::Cow::Borrowed(name),
+        )));
+
+        builder.push_default(StyleProperty::FontSize(widget.styles.font_size));
+
+        builder.push_default(StyleProperty::FontWeight(FontWeight::new(weight)));
+
+        builder.push_default(StyleProperty::FontStyle(font_style));
+
+        builder.push_default(StyleProperty::LineHeight(parley::LineHeight::Absolute(
+            widget.styles.line_height,
+        )));
+
+        builder.push_default(StyleProperty::Brush([color.r, color.g, color.b, color.a]));
+
+        builder.push_default(StyleProperty::Underline(widget.styles.underline));
+
+        builder.push_default(StyleProperty::Strikethrough(widget.styles.strike_through));
+
+        builder.build(&text)
     }
 }

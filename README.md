@@ -1,4 +1,4 @@
-# 🦀 dgui (Desktop GUI)
+# 🦀 dgui
 
 A lightweight `Declarative GUI` framework.
 
@@ -14,47 +14,35 @@ A lightweight `Declarative GUI` framework.
 
 - 📸 Renderer agnostic — works with any graphics backend.
 - 🎭 CSS-inspired styling and Tailwind color palette.
-- ⚡ Lightweight and customizable.
-- 📦 Modular architecture with easy to use API.
-- 🖱️ Drag and Drop support.
-- 🔀 Native Node Graph Support.
+- ⚡ Lightweight and composable.
+- 📦 Modular and easy to use API.
+- 🔀 Built in Node Graphs.
 - 🎮 Built for desktop applications, tools, and games.
 
-### If you haven't installed cargo generate yet
+### Quick Start
 
 ```bash
 cargo install cargo-generate --locked
-```
 
-### Scaffolding Your First Dgui Project
-
-```bash
 cargo generate dgui-rs/template
 ```
 
 ### Api Example
 
 ```rust
-let count = Signal::create(0);
+    let count = Signal::create(0);
 
-let ui = Widget::main(
-    vec![
-        Widget::text(&count),
+    let ctx = Context::new(2048);
 
-        Widget::button(
-            vec![Widget::text("+")],
-            || {
-                count.set(|v| *v += 1);
-            }),
+    let text = ctx.text(&count);
+    let add = ctx.button("+").onclick(||count.set(|v| *v += 1));
+    let sub = ctx.button("-").onclick(||count.set(|v| *v -= 1));
 
-        Widget::button(
-            vec![Widget::text("-")],
-            || {
-                count.set(|v| *v -= 1);
-            }),
-    ],
-    Style::default(),
-);
+    let ui = ctx
+        .panel()
+        .children(vec![text, add, sub]);
+
+    ctx.builder(ui)
 ```
 
 ## 📄 License

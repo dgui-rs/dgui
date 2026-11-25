@@ -10,11 +10,18 @@ repository = "https://github.com/sumeeth05/dgui"
 homepage = "https://github.com/sumeeth05/dgui"
 
 [dependencies]
-taffy = "0.15"
+taffy = "0.16"
 lyon = "1"
-cosmic-text = "0.19.0"
-etagere = "0.3"
-svg = "0.18"
-bytemuck = "1"
-keyframe = "1"
+
+resvg = "0.50"
+image = "0.25"
+
 const-hex = "1"
+
+parley = "0.13.0"
+etagere = "0.3"
+swash = "0.2"
+
+keyframe = "1"
+
+bytemuck = "1"

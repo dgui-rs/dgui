@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, fmt::Display, rc::Rc};
 
 use crate::DIRTY;
 
@@ -65,6 +65,12 @@ impl<T> From<T> for Value<T> {
     }
 }
 
+impl From<&str> for Value<String> {
+    fn from(value: &str) -> Self {
+        Self::Static(value.to_string())
+    }
+}
+
 impl<T: Clone> From<&Value<T>> for Value<T> {
     fn from(value: &Value<T>) -> Self {
         value.clone()
@@ -74,5 +80,49 @@ impl<T: Clone> From<&Value<T>> for Value<T> {
 impl<T> From<&Signal<T>> for Value<T> {
     fn from(signal: &Signal<T>) -> Self {
         Self::Dynamic(signal.clone())
+    }
+}
+
+pub trait TextValue {
+    fn get(&self) -> String;
+
+    fn into_boxed(self) -> Box<dyn TextValue>;
+}
+
+impl<T: Display + Clone + 'static> TextValue for Signal<T> {
+    fn get(&self) -> String {
+        self.value().to_string()
+    }
+    fn into_boxed(self) -> Box<dyn TextValue> {
+        Box::new(self)
+    }
+}
+
+impl<T: Display + Clone + 'static> TextValue for &Signal<T> {
+    fn get(&self) -> String {
+        self.value().to_string()
+    }
+    fn into_boxed(self) -> Box<dyn TextValue> {
+        Box::new((*self).clone())
+    }
+}
+
+impl TextValue for &'static str {
+    fn get(&self) -> String {
+        self.to_string()
+    }
+
+    fn into_boxed(self) -> Box<dyn TextValue> {
+        Box::new(self)
+    }
+}
+
+impl TextValue for String {
+    fn get(&self) -> String {
+        self.clone()
+    }
+
+    fn into_boxed(self) -> Box<dyn TextValue> {
+        Box::new(self)
     }
 }

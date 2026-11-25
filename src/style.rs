@@ -7,18 +7,19 @@ pub use types::{
     AlignItems, Dimension, Display, FlexDirection, FontStyle, FontWeight, JustifyContent, Spacing,
 };
 
-#[derive(Default)]
 pub struct Style {
     pub(crate) layout: taffy::style::Style,
-    pub(crate) color: Option<Color>,
-    pub(crate) background_color: Option<Color>,
-    pub(crate) border_color: Option<Color>,
-    pub(crate) border_radius: Option<f32>,
-    pub(crate) font_size: Option<f32>,
-    pub(crate) font_weight: Option<FontWeight>,
-    pub(crate) font_style: Option<FontStyle>,
-    pub(crate) line_height: Option<f32>,
-    pub(crate) tracking: Option<f32>,
+    pub(crate) color: Color,
+    pub(crate) background_color: Color,
+    pub(crate) border_color: Color,
+    pub(crate) border_radius: f32,
+    pub(crate) font_size: f32,
+    pub(crate) font_weight: FontWeight,
+    pub(crate) font_style: FontStyle,
+    pub(crate) line_height: f32,
+    pub(crate) letter_spacing: f32,
+    pub(crate) underline: bool,
+    pub(crate) strike_through: bool,
 }
 
 impl Style {
@@ -70,13 +71,13 @@ impl Style {
         self
     }
 
-    pub fn flex_grow(mut self, grow: f32) -> Self {
-        self.layout.flex_grow = grow;
+    pub fn flex_grow(mut self) -> Self {
+        self.layout.flex_grow = 1.0;
         self
     }
 
-    pub fn flex_shrink(mut self, shrink: f32) -> Self {
-        self.layout.flex_shrink = shrink;
+    pub fn flex_shrink(mut self) -> Self {
+        self.layout.flex_shrink = 1.0;
         self
     }
 
@@ -182,47 +183,76 @@ impl Style {
     }
 
     pub fn border_color(mut self, color: Color) -> Self {
-        self.border_color = Some(color);
+        self.border_color = color;
         self
     }
 
     pub fn border_radius(mut self, px: f32) -> Self {
-        self.border_radius = Some(px);
+        self.border_radius = px;
         self
     }
 
     pub fn color(mut self, color: Color) -> Self {
-        self.color = Some(color);
+        self.color = color;
         self
     }
 
     pub fn background_color(mut self, color: Color) -> Self {
-        self.background_color = Some(color);
+        self.background_color = color;
         self
     }
 
     pub fn font_size(mut self, size: f32) -> Self {
-        self.font_size = Some(size);
+        self.font_size = size;
         self
     }
 
     pub fn font_weight(mut self, weight: FontWeight) -> Self {
-        self.font_weight = Some(weight);
+        self.font_weight = weight;
         self
     }
 
     pub fn font_style(mut self, style: FontStyle) -> Self {
-        self.font_style = Some(style);
+        self.font_style = style;
         self
     }
 
     pub fn line_height(mut self, px: f32) -> Self {
-        self.line_height = Some(px);
+        self.line_height = px;
         self
     }
 
-    pub fn tracking(mut self, px: f32) -> Self {
-        self.tracking = Some(px);
+    pub fn underline(mut self) -> Self {
+        self.underline = true;
         self
+    }
+
+    pub fn strike_through(mut self) -> Self {
+        self.strike_through = true;
+        self
+    }
+
+    pub fn letter_spacing(mut self, spacing: f32) -> Self {
+        self.letter_spacing = spacing;
+        self
+    }
+}
+
+impl Default for Style {
+    fn default() -> Self {
+        Self {
+            layout: Default::default(),
+            color: Color::WHITE,
+            background_color: Color::NEUTRAL_950,
+            border_color: Color::TRANSPARENT,
+            border_radius: 0.0,
+            font_size: 14.0,
+            font_weight: FontWeight::Normal,
+            font_style: FontStyle::Normal,
+            letter_spacing: 0.0,
+            line_height: 1.2,
+            underline: false,
+            strike_through: false,
+        }
     }
 }
